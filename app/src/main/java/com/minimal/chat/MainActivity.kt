@@ -25,7 +25,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MaterialTheme {
-                // 无底部按钮的纯聊天界面
                 NoBarChatScreen()
             }
         }
@@ -42,7 +41,7 @@ fun NoBarChatScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .systemBarsPadding()  // 只处理状态栏（顶部），不处理导航栏
+            .statusBarsPadding()  // 只处理顶部状态栏
     ) {
         // 标题区
         Surface(
@@ -56,14 +55,13 @@ fun NoBarChatScreen() {
             )
         }
 
-        // 消息列表
+        // 消息列表 - 无 consume, 无 nav padding
         LazyColumn(
             state = listState,
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
-                .nestedScroll(nestedScrollInterop)
-                .consumeWindowInsets(WindowInsets.navigationBars),
+                .nestedScroll(nestedScrollInterop),
             contentPadding = PaddingValues(12.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
@@ -82,13 +80,12 @@ fun NoBarChatScreen() {
             }
         }
 
-        // 输入条 — 无 bottomBar，直接落地
+        // 输入条 — 只保留 imePadding，无 navBarsPadding
         Surface(
             tonalElevation = 2.dp,
             modifier = Modifier
                 .fillMaxWidth()
                 .imePadding()
-                .navigationBarsPadding()
         ) {
             Row(
                 modifier = Modifier
