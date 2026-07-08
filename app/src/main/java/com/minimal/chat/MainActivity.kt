@@ -17,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 class MainActivity : ComponentActivity() {
@@ -26,103 +25,99 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MaterialTheme {
-                ChatScreen()
+                // 无底部按钮的纯聊天界面
+                NoBarChatScreen()
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatScreen() {
+fun NoBarChatScreen() {
     val nestedScrollInterop = rememberNestedScrollInteropConnection()
     var messages by remember { mutableStateOf(listOf("欢迎使用 MinimalChat")) }
     var inputText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
 
-    Scaffold(
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        topBar = {
-            TopAppBar(title = { Text("💬 MinimalChat") })
-        },
-        bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Send, null) },
-                    label = { Text("聊天") },
-                    selected = true,
-                    onClick = { }
-                )
-            }
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .systemBarsPadding()  // 只处理状态栏（顶部），不处理导航栏
+    ) {
+        // 标题区
+        Surface(
+            tonalElevation = 3.dp,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            // Message list
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .nestedScroll(nestedScrollInterop),
-                contentPadding = PaddingValues(12.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                items(messages) { msg ->
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        modifier = Modifier.widthIn(max = 320.dp).align(Alignment.End)
-                    ) {
-                        Text(
-                            text = msg,
-                            modifier = Modifier.padding(14.dp),
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
+            Text(
+                text = "💬 MinimalChat",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+            )
+        }
+
+        // 消息列表
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .nestedScroll(nestedScrollInterop)
+                .consumeWindowInsets(WindowInsets.navigationBars),
+            contentPadding = PaddingValues(12.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            items(messages) { msg ->
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    modifier = Modifier.widthIn(max = 320.dp).align(Alignment.End)
+                ) {
+                    Text(
+                        text = msg,
+                        modifier = Modifier.padding(14.dp),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
                 }
             }
+        }
 
-            // Input bar
-            Surface(
-                tonalElevation = 2.dp,
+        // 输入条 — 无 bottomBar，直接落地
+        Surface(
+            tonalElevation = 2.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .imePadding()
+                .navigationBarsPadding()
+        ) {
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .imePadding()
-                    .navigationBarsPadding()
+                    .padding(horizontal = 4.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 4.dp, vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedTextField(
-                        value = inputText,
-                        onValueChange = { inputText = it },
-                        placeholder = { Text("输入消息...") },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(20.dp),
-                        maxLines = 4,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        )
+                OutlinedTextField(
+                    value = inputText,
+                    onValueChange = { inputText = it },
+                    placeholder = { Text("输入消息...") },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(20.dp),
+                    maxLines = 4,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
                     )
-                    Spacer(Modifier.width(4.dp))
-                    FilledTonalButton(
-                        onClick = {
-                            if (inputText.isNotBlank()) {
-                                messages = messages + inputText
-                                inputText = ""
-                            }
-                        },
-                        modifier = Modifier.height(48.dp)
-                    ) {
-                        Icon(Icons.Default.Send, "发送", modifier = Modifier.size(18.dp))
-                    }
+                )
+                Spacer(Modifier.width(4.dp))
+                FilledTonalButton(
+                    onClick = {
+                        if (inputText.isNotBlank()) {
+                            messages = messages + inputText
+                            inputText = ""
+                        }
+                    },
+                    modifier = Modifier.height(48.dp)
+                ) {
+                    Icon(Icons.Default.Send, "发送", modifier = Modifier.size(18.dp))
                 }
             }
         }
